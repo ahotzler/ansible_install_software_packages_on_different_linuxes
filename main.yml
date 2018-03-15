@@ -1,0 +1,33 @@
+---
+- hosts: all
+  remote_user: root
+
+  tasks:
+
+  - name: Variablen einlesen
+    include_vars: '{{ item }}'
+    with_first_found:
+      - files:
+          # "ansible_distribution" kann sein: "Debian", "SLES", "Ubuntu", "CentOS"
+          # "ansible_distribution_version" kann sein: "9.0", "12.2", "16.04", "7.3.1611"
+          # "ansible_distribution_major_version" kann sein: "9", "12", 16.04"
+          # "ansible_os_family" kann sein: "Debian", "RedHat", "Suse"
+          # groß/klein-Schreibung ist wichtig
+
+          - "{{ ansible_distribution }}.{{ ansible_distribution_version }}.packagenames.yml"
+          # ergibt: "SLES.12.2", "Ubuntu.16.04", "CentOS.7.3.1611", "Debian.8.7"
+
+          - "{{ ansible_distribution }}.{{ ansible_distribution_major_version }}.packagenames.yml"
+          # ergibt: "SLES.12", "Ubuntu.16", "CentOS.7", "Debian.9"
+
+          - "{{ ansible_distribution }}.packagenames.yml"
+          # ergibt: "Debian", "SLES", "Ubuntu", "CentOS"
+
+          - "{{ ansible_os_family }}.packagenames.yml"
+          # ergibt: "Debian", "Suse, "RedHat"
+
+          - "default.packagenames.yml"
+        paths: "./vars/"
+
+  - name: install ftpclient
+    package: name={{ ftpclient_package_name }} state=installed
